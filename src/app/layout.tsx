@@ -66,7 +66,10 @@ export default function RootLayout({
                     Контакты
                   </Link>
                 </nav>
-                <div className="flex items-center gap-2">
+<div className="flex items-center gap-3">
+                  <Link href="/contact" className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow hover:bg-primary/90">
+                    Консультация
+                  </Link>
                   <ThemeToggle />
                 </div>
               </div>

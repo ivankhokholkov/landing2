@@ -1,11 +1,23 @@
 import { Button } from "@/components/ui/button";
+import { JsonLd } from "@/components/jsonld";
 
-export const metadata = { title: "Курсы по n8n" };
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+export const metadata = { title: "Курсы по n8n", alternates: { canonical: `${base}/courses` } };
 
 export default function CoursesPage() {
   const url = process.env.NEXT_PUBLIC_COURSES_URL;
+  const jsonld = url
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        name: "Курс по n8n",
+        provider: { "@type": "Person", name: "Иван" },
+        url,
+      }
+    : null;
   return (
     <div className="container mx-auto px-4 py-12 space-y-6">
+      {jsonld ? <JsonLd data={jsonld} /> : null}
       <h1 className="text-3xl font-bold">Курсы</h1>
       <p className="text-muted-foreground max-w-2xl">
         Практические программы по n8n: от первых сценариев до продакшн‑потоков.

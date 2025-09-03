@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listMdx } from "@/lib/mdx";
 
-export const metadata = { title: "Кейсы — результаты проектов" };
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+export const metadata = { title: "Кейсы — результаты проектов", alternates: { canonical: `${base}/cases` } };
 
 export default async function CasesPage() {
   const cases = await listMdx("cases");

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listMdx } from "@/lib/mdx";
 
-export const metadata = { title: "Блог — статьи и гайды" };
+const base = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+export const metadata = { title: "Блог — статьи и гайды", alternates: { canonical: `${base}/blog` } };
 
 export default async function BlogPage() {
   const posts = await listMdx("blog");

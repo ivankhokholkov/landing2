@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Hero } from '@/components/hero';
+import { Section } from '@/components/section';
+import { MotionInView } from '@/components/motion-in-view';
 
 import { JsonLd } from '@/components/jsonld';
 
@@ -23,7 +25,7 @@ export default function Home() {
       {/* Hero */}
       <Hero />
       {/* Advantages block */}
-      <section className="container mx-auto px-4">
+      <Section>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
@@ -43,17 +45,30 @@ export default function Home() {
               desc: "Эффект за недели. До 75% экономии времени.",
             },
           ].map((i) => (
-            <Card key={i.title}>
+            <MotionInView key={i.title}>
+              <Card className="transition-all hover:-translate-y-0.5 hover:shadow-md">
               <CardHeader>
                 <CardTitle className="text-base">{i.title}</CardTitle>
               </CardHeader>
               <CardContent className="text-sm text-muted-foreground">
                 {i.desc}
               </CardContent>
-            </Card>
+              </Card>
+            </MotionInView>
           ))}
         </div>
-      </section>
+      </Section>
+      {/* Stats section */}
+      <Section className="bg-grid">
+        <div className="grid gap-6 sm:grid-cols-3 text-center">
+          {[{k:"часов в месяц",v:"120+"},{k:"ускорение процессов",v:"×3"},{k:"меньше ошибок",v:"−60%"}].map((s)=>(
+            <MotionInView key={s.k} className="rounded-xl border p-6 bg-background/60">
+              <div className="text-3xl font-bold tracking-tight">{s.v}</div>
+              <div className="text-sm text-muted-foreground mt-1">{s.k}</div>
+            </MotionInView>
+          ))}
+        </div>
+      </Section>
     </div>
   );
 }
