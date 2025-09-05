@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
+  const base = getSiteUrl();
+  const isExample = base.includes("example.com");
   return {
-    rules: [{ userAgent: "*", allow: "/" }],
+    rules: isExample ? [{ userAgent: "*", disallow: "/" }] : [{ userAgent: "*", allow: "/" }],
     sitemap: `${base}/sitemap.xml`,
   };
 }

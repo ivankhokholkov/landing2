@@ -1,24 +1,28 @@
-import { ContactForm } from "@/components/forms/contact-form";
+import { pageMeta } from "@/lib/metadata";
+import { Section } from "@/components/section";
+import { SectionHeader } from "@/components/section-header";
+import type { Metadata } from "next";
+import { canonical } from "@/lib/site";
+import { ContactQuickActions } from "@/components/contact-quick-actions";
 
-export const metadata = { title: "Контакты и заявка" };
+const title = "Контакты и заявка";
+const description = "Свяжитесь удобным способом — мы ответим быстро.";
+const url = canonical("/contact");
+const ogImage = `${canonical()}/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description)}`;
+
+export const metadata: Metadata = {
+  ...pageMeta(title, "/contact"),
+  openGraph: { title, description, url, images: [{ url: ogImage }] },
+  twitter: { card: "summary_large_image" },
+};
 
 export default function ContactPage() {
-  const calLink = process.env.NEXT_PUBLIC_CAL_LINK || "https://cal.com/";
   return (
-    <div className="container mx-auto px-4 py-12 space-y-6">
-      <h1 className="text-3xl font-bold">Контакты</h1>
-      <p className="text-muted-foreground">Оставьте заявку или забронируйте слот в календаре.</p>
-      <div className="grid gap-6 md:grid-cols-2">
-        <ContactForm />
-        <div className="rounded-lg border overflow-hidden">
-          <iframe
-            title="Календарь"
-            src={calLink}
-            className="h-[540px] w-full"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-          />
-        </div>
+    <Section>
+      <SectionHeader as="h1" title="Контакты" description="Выберите удобный способ связи ниже." />
+      <div className="grid gap-6">
+        <ContactQuickActions />
       </div>
-    </div>
+    </Section>
   );
 }

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex items-center justify-center rounded-full border font-medium w-fit whitespace-nowrap shrink-0 gap-2 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
     variants: {
       variant: {
@@ -18,9 +18,17 @@ const badgeVariants = cva(
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
       },
+      size: {
+        xxs: "px-2 py-0.5 text-[11px] [&>svg]:size-3",
+        xs: "px-2.5 py-1 text-xs [&>svg]:size-3",
+        sm: "px-3 py-1.5 text-sm [&>svg]:size-4",
+        md: "px-5 py-3 text-base md:text-lg [&>svg]:size-5 md:[&>svg]:size-6",
+        lg: "px-6 py-4 text-lg md:text-xl [&>svg]:size-6 md:[&>svg]:size-7",
+      },
     },
     defaultVariants: {
       variant: "default",
+      size: "md",
     },
   }
 )

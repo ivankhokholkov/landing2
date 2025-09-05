@@ -6,14 +6,16 @@ type Props = {
   children: React.ReactNode;
   container?: boolean;
   as?: keyof JSX.IntrinsicElements;
+  max?: 'default' | 'narrow' | 'wide';
 };
 
-export function Section({ id, className, children, container = true, as = 'section' }: Props) {
+export function Section({ id, className, children, container = true, as = 'section', max = 'default' }: Props) {
   const Comp = as as keyof JSX.IntrinsicElements;
   const Element = Comp as unknown as (props: React.HTMLAttributes<HTMLElement>) => JSX.Element;
+  const sizeClass = max === 'narrow' ? 'wrapper-narrow' : max === 'wide' ? 'wrapper-wide' : '';
   return (
     <Element id={id} className={clsx('py-12 sm:py-16', className)}>
-      {container ? <div className="container mx-auto px-4">{children}</div> : children}
+      {container ? <div className={clsx('wrapper', sizeClass)}>{children}</div> : children}
     </Element>
   );
 }
