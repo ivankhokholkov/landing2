@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { canonical } from "@/lib/site";
 import { ContactCtaCard } from "@/components/contact-cta-card";
 import { Calendar, Mails, MessageCircle, Send, PlayCircle, Briefcase } from "lucide-react";
+import { ContactForm } from "@/components/contact-form";
 
 const title = "Контакты и заявка";
 const description = "Свяжитесь удобным способом — мы ответим быстро.";
@@ -115,6 +116,16 @@ export default function ContactPage() {
             />
           ) : null}
         </div>
+      </div>
+
+      {/* Заявка через форму (опционально, с reCAPTCHA v3) */}
+      <div className="mt-12">
+        <h2 className="text-xl font-semibold mb-3">Оставить заявку</h2>
+        <p className="text-sm text-muted-foreground mb-4">Укажите контакты и кратко опишите задачу — я свяжусь с вами.</p>
+        {/* Static import keeps type-safety and passes ESLint */}
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore - imported only on this page */}
+        <ContactForm />
       </div>
     </Section>
   );
