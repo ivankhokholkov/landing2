@@ -107,17 +107,17 @@ export function ContactForm() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm">Имя</label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
+          <label htmlFor="contact-name" className="mb-1 block text-sm">Имя</label>
+          <Input id="contact-name" aria-label="Имя" value={name} onChange={(e) => setName(e.target.value)} required autoComplete="name" />
         </div>
         <div>
-          <label className="mb-1 block text-sm">Email</label>
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" />
+          <label htmlFor="contact-email" className="mb-1 block text-sm">Email</label>
+          <Input id="contact-email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required autoComplete="email" />
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-sm">Сообщение</label>
-        <Textarea value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} />
+        <label htmlFor="contact-message" className="mb-1 block text-sm">Сообщение</label>
+        <Textarea id="contact-message" aria-label="Сообщение" value={message} onChange={(e) => setMessage(e.target.value)} required rows={5} />
       </div>
       <div>
         <label className="mb-1 block text-sm">Услуга (необязательно)</label>
