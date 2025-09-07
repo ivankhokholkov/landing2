@@ -17,18 +17,33 @@ const nextConfig = {
       'upgrade-insecure-requests',
     ].join('; ');
 
-    const enableCsp = process.env.NEXT_PUBLIC_SITE_URL && !/localhost|example\.com/.test(process.env.NEXT_PUBLIC_SITE_URL);
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || '';
+    const isLocal = /localhost|example\.com/.test(siteUrl);
+    const isHttps = siteUrl.startsWith('https://');
+    const enableCsp = siteUrl && !isLocal;
+
+    /**
+     * Security headers beyond CSP
+     */
+    const extraSecurity = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+      { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+      { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+      // HSTS only for HTTPS and non-local hosts
+      ...(isHttps && !isLocal
+        ? [{ key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' }]
+        : []),
+      ...(enableCsp ? [{ key: 'Content-Security-Policy', value: csp }] : []),
+    ];
 
     return [
       {
         source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          ...(enableCsp ? [{ key: 'Content-Security-Policy', value: csp }] : []),
-        ],
+        headers: extraSecurity,
       },
     ];
   },

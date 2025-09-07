@@ -5,6 +5,9 @@ import { sendLeadEmail } from "@/lib/email";
 import { sendTelegramLead } from "@/lib/telegram";
 import { appendLeadToSheet } from "@/lib/sheets";
 import { sendTelegramDocuments, type TelegramFile } from "@/lib/telegram";
+import { getSiteUrl } from "@/lib/site";
+import { logError } from "@/lib/log";
+import { fileTypeFromBuffer } from "file-type";
 
 // Rate limiting (in-memory; MVP). Note: process lifetime scoped.
 const RL_WINDOW_MS = Number.parseInt(process.env.LEAD_RATE_WINDOW_MS || "60000");
@@ -27,7 +30,7 @@ function rateLimitOk(ip: string) {
 }
 
 // Attachments validation
-const ALLOWED_MIME = new Set([
+const DEFAULT_ALLOWED_MIME = new Set([
   "application/pdf",
   "image/png",
   "image/jpeg",
@@ -42,6 +45,9 @@ const ALLOWED_MIME = new Set([
   // archives (optional, keep small)
   "application/zip",
 ]);
+const ALLOWED_MIME = process.env.LEAD_ALLOWED_MIME
+  ? new Set(process.env.LEAD_ALLOWED_MIME.split(",").map((s) => s.trim()).filter(Boolean))
+  : DEFAULT_ALLOWED_MIME;
 const MAX_FILE_MB = Number.parseInt(process.env.LEAD_MAX_FILE_MB || "5");
 const MAX_TOTAL_MB = Number.parseInt(process.env.LEAD_MAX_TOTAL_MB || "10");
 const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
@@ -57,6 +63,17 @@ const LeadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // Optional strict Origin/Referer check (browser requests)
+    if (process.env.STRICT_ORIGIN_CHECK === "1") {
+      const site = getSiteUrl();
+      const origin = req.headers.get("origin") || "";
+      const referer = req.headers.get("referer") || "";
+      const same = (origin && origin.startsWith(site)) || (referer && referer.startsWith(site));
+      if (!same) {
+        return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
+      }
+    }
+
     // Basic rate limiting
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
@@ -81,6 +98,9 @@ export async function POST(req: Request) {
       if (typeof hp === "string" && hp.trim().length > 0) {
         return NextResponse.json({ ok: true, spam: true }, { status: 202 });
       }
+      const captchaToken = String(
+        form.get("captcha") || form.get("g-recaptcha-response") || form.get("h-captcha-response") || ""
+      );
       const data = {
         name: String(form.get("name") || ""),
         email: String(form.get("email") || ""),
@@ -90,6 +110,13 @@ export async function POST(req: Request) {
       };
       const parsed = LeadSchema.parse(data);
       name = parsed.name; email = parsed.email; message = parsed.message; source = parsed.source; service = parsed.service;
+
+      // Optional captcha verification
+      if (process.env.RECAPTCHA_SECRET || process.env.HCAPTCHA_SECRET) {
+        const ok = await verifyCaptcha(captchaToken);
+        if (!ok) return NextResponse.json({ ok: false, error: "captcha_failed" }, { status: 400 });
+      }
+
       // attachments (validate type/size BEFORE buffering)
       let totalBytes = 0;
       for (const [key, value] of form.entries()) {
@@ -119,12 +146,23 @@ export async function POST(req: Request) {
           }
         }
       }
-      // If validation passed — now buffer files
+      // If validation passed — now buffer files and sniff real content type
       for (const [key, value] of form.entries()) {
         if (key !== "file" && !key.startsWith("file")) continue;
         if (value instanceof File) {
           const ab = await value.arrayBuffer();
-          files.push({ filename: value.name || "file", contentType: value.type || "application/octet-stream", buffer: Buffer.from(ab) });
+          const buffer = Buffer.from(ab);
+          // Sniff real MIME
+          try {
+            const ft = await fileTypeFromBuffer(buffer);
+            if (ft?.mime && !ALLOWED_MIME.has(ft.mime)) {
+              return NextResponse.json(
+                { ok: false, error: "unsupported_file_type", detail: `${value.name || "file"}: ${ft.mime}` },
+                { status: 400 }
+              );
+            }
+          } catch {}
+          files.push({ filename: value.name || "file", contentType: value.type || "application/octet-stream", buffer });
         }
       }
     } else {
@@ -133,6 +171,12 @@ export async function POST(req: Request) {
       const website = (json as Record<string, unknown>).website;
       if (typeof website === "string" && website.trim().length > 0) {
         return NextResponse.json({ ok: true, spam: true }, { status: 202 });
+      }
+      const captchaToken = String((json as Record<string, unknown>).captcha || "");
+      // Optional captcha verification
+      if (process.env.RECAPTCHA_SECRET || process.env.HCAPTCHA_SECRET) {
+        const ok = await verifyCaptcha(captchaToken);
+        if (!ok) return NextResponse.json({ ok: false, error: "captcha_failed" }, { status: 400 });
       }
       const parsed = LeadSchema.parse(json);
       ({ name, email, message, source, service } = parsed);
@@ -146,9 +190,9 @@ export async function POST(req: Request) {
         });
         savedId = saved.id;
       }
-    } catch (e) {
+  } catch (e) {
       // Skip DB errors in MVP; log for debugging
-      console.error("DB save error", e);
+      logError("DB save error", e);
     }
 
     try {
@@ -160,7 +204,7 @@ export async function POST(req: Request) {
         });
       }
     } catch (e) {
-      console.error("Email send error", e);
+      logError("Email send error", e);
     }
 
     // Telegram (optional)
@@ -174,7 +218,7 @@ export async function POST(req: Request) {
         }
       }
     } catch (e) {
-      console.error("Telegram send error", e);
+      logError("Telegram send error", e);
     }
 
     // Google Sheets (optional)
@@ -192,7 +236,7 @@ export async function POST(req: Request) {
         });
       }
     } catch (e) {
-      console.error("Sheets append error", e);
+      logError("Sheets append error", e);
     }
 
     return NextResponse.json({ ok: true, id: savedId }, { status: 202 });
@@ -200,6 +244,46 @@ export async function POST(req: Request) {
     if (err instanceof z.ZodError) {
       return NextResponse.json({ ok: false, errors: err.flatten() }, { status: 400 });
     }
+    logError("Lead API unhandled error", err);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
+}
+
+async function verifyCaptcha(token: string): Promise<boolean> {
+  if (!token) return false;
+  if (process.env.RECAPTCHA_SECRET) {
+    const body = new URLSearchParams({ secret: process.env.RECAPTCHA_SECRET, response: token });
+    try {
+      const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(7000),
+      });
+      const data = (await res.json()) as { success?: boolean };
+      return !!data.success;
+    } catch (e) {
+      logError('reCAPTCHA verify error', e);
+      return false;
+    }
+  }
+  if (process.env.HCAPTCHA_SECRET) {
+    const body = new URLSearchParams({ secret: process.env.HCAPTCHA_SECRET, response: token });
+    try {
+      const res = await fetch('https://hcaptcha.com/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body,
+        cache: 'no-store',
+        signal: AbortSignal.timeout(7000),
+      });
+      const data = (await res.json()) as { success?: boolean };
+      return !!data.success;
+    } catch (e) {
+      logError('hCaptcha verify error', e);
+      return false;
+    }
+  }
+  return true;
 }

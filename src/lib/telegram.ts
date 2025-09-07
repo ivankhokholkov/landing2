@@ -14,6 +14,7 @@ export async function sendTelegramLead(params: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: params.chatId, text }),
     cache: "no-store",
+    signal: AbortSignal.timeout(7000),
   });
   if (!res.ok) {
     throw new Error(`Telegram sendMessage failed: ${res.status}`);
@@ -42,7 +43,7 @@ export async function sendTelegramDocuments(params: {
     const blob = new Blob([u8], { type: file.contentType });
     form.append("document", blob, file.filename);
     const url = `https://api.telegram.org/bot${params.botToken}/sendDocument`;
-    const res = await fetch(url, { method: "POST", body: form, cache: "no-store" });
+    const res = await fetch(url, { method: "POST", body: form, cache: "no-store", signal: AbortSignal.timeout(10000) });
     if (!res.ok) throw new Error(`Telegram sendDocument failed: ${res.status}`);
   }
 }
