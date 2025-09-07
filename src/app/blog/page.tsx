@@ -30,7 +30,7 @@ export default async function BlogPage() {
             <Link href={`/blog/${p.slug}`} className="group">
               <Card className="h-full hover:bg-muted transition-colors">
                 <CardHeader>
-                  <div className="font-medium">{p.frontmatter.title}</div>
+                  <div className="font-medium text-foreground">{p.frontmatter.title}</div>
                 </CardHeader>
                 {p.frontmatter.excerpt ? (
                   <CardContent>

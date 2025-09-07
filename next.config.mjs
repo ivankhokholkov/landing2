@@ -1,3 +1,5 @@
+import { withSentryConfig } from '@sentry/nextjs';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async headers() {
@@ -32,5 +34,10 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Wrap with Sentry (no-op if DSN not set at runtime)
+const sentryExport = withSentryConfig(nextConfig, {
+  silent: true,
+});
+
+export default sentryExport;
 

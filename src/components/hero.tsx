@@ -17,10 +17,10 @@ export function Hero() {
         <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-purple-100/20 dark:from-purple-900/10 hidden sm:block" />
       </div>
       
-      {/* Animated background shapes (hidden on mobile for performance) */}
+      {/* Background shapes (static, lightweight for better LCP) */}
       <div className="hidden sm:block absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-1/2 -right-1/2 h-[800px] w-[800px] rounded-full bg-gradient-to-br from-purple-400/10 to-transparent blur-3xl animate-pulse" />
-        <div className="absolute -bottom-1/2 -left-1/2 h-[800px] w-[800px] rounded-full bg-gradient-to-tr from-blue-400/10 to-transparent blur-3xl animate-pulse delay-1000" />
+        <div className="absolute -top-1/2 -right-1/2 h-[700px] w-[700px] rounded-full bg-gradient-to-br from-purple-400/10 to-transparent blur-2xl" />
+        <div className="absolute -bottom-1/2 -left-1/2 h-[700px] w-[700px] rounded-full bg-gradient-to-tr from-blue-400/10 to-transparent blur-2xl" />
       </div>
 
       <div className="container mx-auto px-5 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">

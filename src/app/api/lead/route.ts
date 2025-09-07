@@ -6,6 +6,47 @@ import { sendTelegramLead } from "@/lib/telegram";
 import { appendLeadToSheet } from "@/lib/sheets";
 import { sendTelegramDocuments, type TelegramFile } from "@/lib/telegram";
 
+// Rate limiting (in-memory; MVP). Note: process lifetime scoped.
+const RL_WINDOW_MS = Number.parseInt(process.env.LEAD_RATE_WINDOW_MS || "60000");
+const RL_MAX = Number.parseInt(process.env.LEAD_RATE_MAX || "60");
+const rl = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimitOk(ip: string) {
+  const now = Date.now();
+  const entry = rl.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    rl.set(ip, { count: 1, resetAt: now + RL_WINDOW_MS });
+    return { ok: true } as const;
+  }
+  if (entry.count >= RL_MAX) {
+    return { ok: false as const, retryAfterSec: Math.max(1, Math.ceil((entry.resetAt - now) / 1000)) };
+  }
+  entry.count += 1;
+  rl.set(ip, entry);
+  return { ok: true } as const;
+}
+
+// Attachments validation
+const ALLOWED_MIME = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "text/plain",
+  "text/csv",
+  // common office docs
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+  // archives (optional, keep small)
+  "application/zip",
+]);
+const MAX_FILE_MB = Number.parseInt(process.env.LEAD_MAX_FILE_MB || "5");
+const MAX_TOTAL_MB = Number.parseInt(process.env.LEAD_MAX_TOTAL_MB || "10");
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+const MAX_TOTAL_BYTES = MAX_TOTAL_MB * 1024 * 1024;
+
 const LeadSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
@@ -16,6 +57,19 @@ const LeadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // Basic rate limiting
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+    const rlRes = rateLimitOk(ip);
+    if (!rlRes.ok) {
+      return new NextResponse(JSON.stringify({ ok: false, error: "rate_limited" }), {
+        status: 429,
+        headers: { "Retry-After": String(rlRes.retryAfterSec) },
+      });
+    }
+
     const ctype = req.headers.get("content-type") || "";
     let name: string, email: string, message: string, source: string | undefined, service: string | undefined;
     const files: TelegramFile[] = [];
@@ -36,7 +90,36 @@ export async function POST(req: Request) {
       };
       const parsed = LeadSchema.parse(data);
       name = parsed.name; email = parsed.email; message = parsed.message; source = parsed.source; service = parsed.service;
-      // attachments
+      // attachments (validate type/size BEFORE buffering)
+      let totalBytes = 0;
+      for (const [key, value] of form.entries()) {
+        if (key !== "file" && !key.startsWith("file")) continue;
+        if (value instanceof File) {
+          const contentType = value.type || "application/octet-stream";
+          const size = typeof value.size === "number" ? value.size : 0;
+
+          if (!ALLOWED_MIME.has(contentType)) {
+            return NextResponse.json(
+              { ok: false, error: "unsupported_file_type", detail: `${value.name || "file"}: ${contentType}` },
+              { status: 400 }
+            );
+          }
+          if (size > MAX_FILE_BYTES) {
+            return NextResponse.json(
+              { ok: false, error: "file_too_large", detail: `${value.name || "file"} > ${MAX_FILE_MB}MB` },
+              { status: 400 }
+            );
+          }
+          totalBytes += size;
+          if (totalBytes > MAX_TOTAL_BYTES) {
+            return NextResponse.json(
+              { ok: false, error: "total_size_exceeded", detail: `total > ${MAX_TOTAL_MB}MB` },
+              { status: 400 }
+            );
+          }
+        }
+      }
+      // If validation passed — now buffer files
       for (const [key, value] of form.entries()) {
         if (key !== "file" && !key.startsWith("file")) continue;
         if (value instanceof File) {

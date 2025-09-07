@@ -10,7 +10,7 @@ function actionLink() {
   const email = process.env.NEXT_PUBLIC_EMAIL || null;
   const cal = process.env.NEXT_PUBLIC_CAL_LINK || null;
   const phone = process.env.NEXT_PUBLIC_PHONE || null;
-  const wa = `https://wa.me/${waNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("Здравствуйте! Хочу обсудить проект.")}`;
+  const wa = `https://wa.me/${waNumber.replace(/[^0-9]/g, "")}`;
   const mailto = email ? `mailto:${email}?subject=${encodeURIComponent("Запрос с сайта")}&body=${encodeURIComponent("Здравствуйте! Хочу обсудить проект.")}` : null;
   const tel = phone ? `tel:${phone.replace(/\s/g, "")}` : null;
   return { tg, wa, mailto, cal, tel };

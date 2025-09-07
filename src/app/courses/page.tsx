@@ -23,10 +23,14 @@ export default function CoursesPage() {
   const jsonld = url
     ? {
         "@context": "https://schema.org",
-        "@type": "Course",
-        name: "Курс по n8n",
-        provider: { "@type": "Person", name: "Иван" },
+        "@type": "ProfilePage",
         url,
+        mainEntity: {
+          "@type": "Person",
+          name: "Иван",
+          url,
+          sameAs: [url],
+        },
       }
     : null;
   return (
@@ -36,7 +40,7 @@ export default function CoursesPage() {
       {url ? (
         <Button asChild size="lg">
           <Link href={url} target="_blank" rel="noopener noreferrer">
-            Перейти на курс
+            Открыть профиль Stepik
           </Link>
         </Button>
       ) : (

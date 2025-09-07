@@ -53,6 +53,8 @@ Optional analytics/chat:
 - NEXT_PUBLIC_PLAUSIBLE_DOMAIN — your Plausible domain (e.g. yourdomain.com)
 - NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL — usually https://plausible.io/js/script.js
 - NEXT_PUBLIC_CRISP_WEBSITE_ID — Crisp website ID (Crisp dashboard → Settings → Website Settings → Setup instructions)
+- SENTRY_DSN — optional, to enable Sentry monitoring (client, server, edge)
+- SENTRY_TRACES_SAMPLE_RATE — optional, default 0.1
 
 Contact/calendar:
 
@@ -70,6 +72,7 @@ Email via Resend:
 
 - RESEND_API_KEY — from https://resend.com (API Keys)
 - LEAD_EMAIL_TO — recipient email to get notifications
+- RESEND_FROM — e.g. Иван <noreply@ivan-ai-practice.ru> (use your verified domain for deliverability)
 
 Telegram notifications:
 
@@ -124,6 +127,12 @@ New tests include:
 - API health: GET /api/health returns ok
 - API lead: invalid body → 400 with errors; valid body → 202 (with external integrations disabled by default)
 - Visual/screenshots across routes and themes with artifacts attached to report
+
+## Roadmap & audit
+
+Подробный аудит проекта и приоритетный план улучшений:
+
+- docs/PROJECT_AUDIT.md — критерии оценки, выводы, дорожная карта, acceptance criteria и runbook.
 
 ## CI
 

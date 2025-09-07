@@ -41,6 +41,16 @@ export default function RootLayout({
   const plausibleUrl = process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL || "https://plausible.io/js/script.js";
   const crispId = process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID;
 
+  // Public contact/social links
+  const tgLink = process.env.NEXT_PUBLIC_TELEGRAM_LINK || null; // рабочий Telegram
+  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || null;
+  const email = process.env.NEXT_PUBLIC_EMAIL || null;
+  const tgChannel = process.env.NEXT_PUBLIC_TELEGRAM_CHANNEL || null; // канал
+  const youtube = process.env.NEXT_PUBLIC_YOUTUBE_URL || null;
+  const rutube = process.env.NEXT_PUBLIC_RUTUBE_URL || null;
+  const stepik = process.env.NEXT_PUBLIC_COURSES_URL || null;
+  const waLink = waNumber ? `https://wa.me/${waNumber.replace(/[^0-9]/g, "")}` : null;
+
   return (
     <html lang="ru" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -51,7 +61,7 @@ export default function RootLayout({
             <main id="content" className="flex-1 pb-28 md:pb-0">{children}</main>
             <footer className="border-t bg-background/50">
               <div className="wrapper py-12">
-                <div className="grid gap-8 md:grid-cols-4">
+                <div className="grid gap-8 md:grid-cols-6">
                   <div>
                     <p className="font-semibold mb-3">n8n Автоматизация</p>
                     <p className="text-sm text-muted-foreground">
@@ -60,7 +70,7 @@ export default function RootLayout({
                   </div>
                   <div>
                     <p className="font-medium mb-3">Услуги</p>
-<ul className="space-y-2 text-[15px] text-muted-foreground">
+                    <ul className="space-y-2 text-[15px] text-muted-foreground">
                       <li><Link href="/services" className="hover:text-foreground transition-colors">Внедрение</Link></li>
                       <li><Link href="/courses" className="hover:text-foreground transition-colors">Обучение</Link></li>
                       <li><Link href="/cases" className="hover:text-foreground transition-colors">Кейсы</Link></li>
@@ -68,7 +78,7 @@ export default function RootLayout({
                   </div>
                   <div>
                     <p className="font-medium mb-3">Компания</p>
-<ul className="space-y-2 text-[15px] text-muted-foreground">
+                    <ul className="space-y-2 text-[15px] text-muted-foreground">
                       <li><Link href="/blog" className="hover:text-foreground transition-colors">Блог</Link></li>
                       <li><Link href="/about" className="hover:text-foreground transition-colors">О нас</Link></li>
                       <li><Link href="/contact" className="hover:text-foreground transition-colors">Контакты</Link></li>
@@ -76,13 +86,58 @@ export default function RootLayout({
                   </div>
                   <div>
                     <p className="font-medium mb-3">Правовая информация</p>
-<ul className="space-y-2 text-[15px] text-muted-foreground">
+                    <ul className="space-y-2 text-[15px] text-muted-foreground">
                       <li><Link href="/privacy" className="hover:text-foreground transition-colors">Политика конфиденциальности</Link></li>
                       <li><Link href="/terms" className="hover:text-foreground transition-colors">Условия использования</Link></li>
                     </ul>
                   </div>
+                  <div>
+                    <p className="font-medium mb-3">Связь</p>
+                    <ul className="space-y-2 text-[15px] text-muted-foreground">
+                      {tgLink ? (
+                        <li>
+                          <Link href={tgLink} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram</Link>
+                        </li>
+                      ) : null}
+                      {waLink ? (
+                        <li>
+                          <Link href={waLink} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">WhatsApp</Link>
+                        </li>
+                      ) : null}
+                      {email ? (
+                        <li>
+                          <Link href={`mailto:${email}`} className="hover:text-foreground transition-colors">{email}</Link>
+                        </li>
+                      ) : null}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-3">Соцсети</p>
+                    <ul className="space-y-2 text-[15px] text-muted-foreground">
+                      {tgChannel ? (
+                        <li>
+                          <Link href={tgChannel} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Telegram-канал</Link>
+                        </li>
+                      ) : null}
+                      {youtube ? (
+                        <li>
+                          <Link href={youtube} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">YouTube</Link>
+                        </li>
+                      ) : null}
+                      {rutube ? (
+                        <li>
+                          <Link href={rutube} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">RuTube</Link>
+                        </li>
+                      ) : null}
+                      {stepik ? (
+                        <li>
+                          <Link href={stepik} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Stepik</Link>
+                        </li>
+                      ) : null}
+                    </ul>
+                  </div>
                 </div>
-<div className="mt-8 pt-8 border-t text-center text-[15px] text-muted-foreground">
+                <div className="mt-8 pt-8 border-t text-center text-[15px] text-muted-foreground">
                   © {new Date().getFullYear()} Иван Хохолков. Все права защищены.
                 </div>
               </div>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 module.exports = {
   ci: {
     collect: {
@@ -8,16 +10,19 @@ module.exports = {
         'http://localhost:3000/blog',
         'http://localhost:3000/cases',
         'http://localhost:3000/contact'
-      ]
+      ],
+      settings: {
+        budgets: require('./lighthouse-budgets.json')
+      }
     },
     assert: {
       preset: 'lighthouse:recommended',
       assertions: {
-        // High-level category gates (warnings only)
-        'categories:performance': ['warn', { minScore: 0.8 }],
-        'categories:accessibility': ['warn', { minScore: 0.95 }],
-        'categories:best-practices': ['warn', { minScore: 0.9 }],
-        'categories:seo': ['warn', { minScore: 0.9 }],
+        // Category gates
+        'categories:performance': ['error', { minScore: 0.9 }],
+        'categories:accessibility': ['error', { minScore: 0.9 }],
+        'categories:best-practices': ['error', { minScore: 0.95 }],
+        'categories:seo': ['error', { minScore: 0.95 }],
         // Tune noisy audits to warn/off to avoid flaky CI
         'errors-in-console': 'warn',
         'heading-order': 'warn',

@@ -30,7 +30,7 @@ export default async function CasesPage() {
             <Link href={`/cases/${c.slug}`} className="group">
               <Card className="h-full hover:bg-muted transition-colors">
                 <CardHeader>
-                  <div className="font-medium">{c.frontmatter.title}</div>
+                  <div className="font-medium text-foreground">{c.frontmatter.title}</div>
                 </CardHeader>
                 {c.frontmatter.excerpt ? (
                   <CardContent>
