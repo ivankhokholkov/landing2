@@ -1,25 +1,47 @@
 import Link from "next/link";
 import { listMdx } from "@/lib/mdx";
+import { pageMeta } from "@/lib/metadata";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Section } from "@/components/section";
+import { SectionHeader } from "@/components/section-header";
+import { Reveal } from "@/components/reveal";
+import type { Metadata } from "next";
+import { canonical } from "@/lib/site";
 
-const base = process.env.NEXT_PUBLIC_SITE_URL || "https://example.com";
-export const metadata = { title: "Кейсы — результаты проектов", alternates: { canonical: `${base}/cases` } };
+const title = "Кейсы — результаты проектов";
+const description = "Реальные примеры автоматизаций и результаты.";
+const url = canonical("/cases");
+const ogImage = `${canonical()}/api/og?title=${encodeURIComponent(title)}&subtitle=${encodeURIComponent(description)}`;
+
+export const metadata: Metadata = {
+  ...pageMeta(title, "/cases"),
+  openGraph: { title, description, url, images: [{ url: ogImage }] },
+  twitter: { card: "summary_large_image" },
+};
 
 export default async function CasesPage() {
   const cases = await listMdx("cases");
   return (
-    <div className="container mx-auto px-4 py-12 space-y-6">
-      <h1 className="text-3xl font-bold">Кейсы</h1>
-      <p className="text-muted-foreground max-w-2xl">Реальные примеры автоматизаций и результаты.</p>
+    <Section>
+      <SectionHeader as="h1" title="Кейсы" description="Реальные примеры автоматизаций и результаты." />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {cases.map((c) => (
-          <Link key={c.slug} href={`/cases/${c.slug}`} className="rounded-lg border p-4 hover:bg-muted">
-            <div className="font-medium">{c.frontmatter.title}</div>
-            {c.frontmatter.excerpt ? (
-              <div className="text-sm text-muted-foreground mt-1">{c.frontmatter.excerpt}</div>
-            ) : null}
-          </Link>
+        {cases.map((c, i) => (
+          <Reveal key={c.slug} delay={i * 0.05}>
+            <Link href={`/cases/${c.slug}`} className="group">
+              <Card className="h-full hover:bg-muted transition-colors">
+                <CardHeader>
+                  <div className="font-medium text-foreground">{c.frontmatter.title}</div>
+                </CardHeader>
+                {c.frontmatter.excerpt ? (
+                  <CardContent>
+<div className="text-[15px] text-muted-foreground">{c.frontmatter.excerpt}</div>
+                  </CardContent>
+                ) : null}
+              </Card>
+            </Link>
+          </Reveal>
         ))}
       </div>
-    </div>
+    </Section>
   );
 }

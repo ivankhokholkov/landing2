@@ -14,4 +14,5 @@ model Lead {
   email     String
   message   String
   source    String?
+  service   String?
 }
