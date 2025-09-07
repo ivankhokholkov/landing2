@@ -63,6 +63,18 @@ const LeadSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    // Content-Type allowlist and basic size guard
+    const ctype = req.headers.get("content-type") || "";
+    const allowed = ctype.includes("application/json") || ctype.includes("multipart/form-data");
+    if (!allowed) {
+      return NextResponse.json({ ok: false, error: "unsupported_content_type" }, { status: 415 });
+    }
+    const clen = Number.parseInt(req.headers.get("content-length") || "0", 10);
+    const MAX_REQUEST_MB = Number.parseInt(process.env.LEAD_MAX_REQUEST_MB || "12");
+    if (clen && clen > MAX_REQUEST_MB * 1024 * 1024) {
+      return NextResponse.json({ ok: false, error: "request_too_large" }, { status: 413 });
+    }
+
     // Optional strict Origin/Referer check (browser requests)
     if (process.env.STRICT_ORIGIN_CHECK === "1") {
       const site = getSiteUrl();
@@ -87,7 +99,6 @@ export async function POST(req: Request) {
       });
     }
 
-    const ctype = req.headers.get("content-type") || "";
     let name: string, email: string, message: string, source: string | undefined, service: string | undefined;
     const files: TelegramFile[] = [];
 
