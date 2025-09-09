@@ -24,12 +24,12 @@ export function ContactCtaCard({
       target={external && href.startsWith("http") ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       className={cn(
-        "group block rounded-2xl border bg-card/50 px-5 py-5 transition-colors hover:border-foreground/30",
+        "group block rounded-2xl border bg-card px-5 py-5 shadow-sm transition-colors hover:border-foreground/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         className
       )}
     >
       <div className="flex items-center gap-4">
-        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-background/60 group-hover:bg-background">
+        <div className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-background/70 group-hover:bg-background">
           {icon}
         </div>
         <div className="min-w-0">

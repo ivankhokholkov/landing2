@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { MessageCircle, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ContactCtaCard } from "@/components/contact-cta-card";
 
 function actionLink() {
   const tg = process.env.NEXT_PUBLIC_TELEGRAM_LINK || "https://t.me/your_username";
@@ -19,31 +18,19 @@ function actionLink() {
 export function ContactQuickActions() {
   const { tg, wa } = actionLink();
   const primary = [
-    { href: tg, label: "Telegram", icon: <Send className="h-6 w-6" /> },
-    { href: wa, label: "WhatsApp", icon: <MessageCircle className="h-6 w-6" /> },
+    { href: tg, label: "Telegram", icon: <Send className="h-5 w-5" /> },
+    { href: wa, label: "WhatsApp", icon: <MessageCircle className="h-5 w-5" /> },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {primary.map((i) => (
-        <Button
-          asChild
+        <ContactCtaCard
           key={i.label}
-          variant="outline"
-          size="lg"
-          className="h-14 rounded-xl justify-start px-5 text-base"
-        >
-          <Link
-            href={i.href}
-            target={i.href.startsWith("http") ? "_blank" : undefined}
-            rel="noopener noreferrer"
-          >
-            <span className="inline-flex items-center gap-3">
-              {i.icon}
-              <span>{i.label}</span>
-            </span>
-          </Link>
-        </Button>
+          href={i.href}
+          label={i.label}
+          icon={i.icon}
+        />
       ))}
     </div>
   );

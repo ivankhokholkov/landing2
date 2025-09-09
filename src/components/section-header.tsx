@@ -20,7 +20,7 @@ export function SectionHeader({
   const Heading = as;
   return (
     <div className={clsx("mb-12", alignClass, className)}>
-      {badge ? <Badge size="sm" className="mb-4">{badge}</Badge> : null}
+      {badge ? <Badge size="md" className="mb-4">{badge}</Badge> : null}
       <Heading className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-balance">{title}</Heading>
       {description ? (
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">

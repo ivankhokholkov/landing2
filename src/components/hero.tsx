@@ -31,7 +31,7 @@ export function Hero() {
             className="flex flex-wrap justify-center gap-1 mb-4"
           >
             {heroBadges.map((item) => (
-              <Badge key={item.label} variant="secondary" size="xxs">
+              <Badge key={item.label} variant="secondary" size="sm" className="text-base">
                 <item.icon className="mr-1" aria-hidden="true" />
                 {item.label}
               </Badge>

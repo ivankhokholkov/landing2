@@ -22,8 +22,10 @@ module.exports = {
         'categories:performance': ['error', { minScore: 0.9 }],
         'categories:accessibility': ['error', { minScore: 0.9 }],
         'categories:best-practices': ['error', { minScore: 0.95 }],
-        'categories:seo': ['error', { minScore: 0.95 }],
+        // In CI (localhost) SEO may be skewed by robots headers; keep as warning.
+        'categories:seo': ['warn', { minScore: 0.95 }],
         // Tune noisy audits to warn/off to avoid flaky CI
+        'is-crawlable': 'warn',
         'errors-in-console': 'warn',
         'heading-order': 'warn',
         'largest-contentful-paint': 'warn',
